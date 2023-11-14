@@ -46,6 +46,14 @@ your-stage-id:
   # …
 ```
 
+## Configuration
+
+Configuration is via various envariables in the Spacelift runner container, inspired by tailscale's `containerboot` binary:
+
+- `TS_AUTH_KEY` - Tailscale auth key (Suggest creating ephemeral & tagged key)
+- `TS_TAILSCALED_EXTRA_ARGS` - Extra arguments to pass to `tailscaled`. eg, `--socks5-server=localhost:1080`
+- `TS_TAILSCALE_ARGS` - Extra arguments to pass to `tailscale up`. eg, `--ssh` for debugging
+
 ## Context
 
 Spacelift runs terraform (or other tooling) in containers, and controls the commands that run therein. They operate in phases, and don't detect the "end" of a phase until all processes in the container have exited. It appears each phase _can_ be executed in a different container, but with the same workspace directory/environment variables copied between containers.
