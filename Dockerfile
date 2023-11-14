@@ -15,4 +15,6 @@ RUN mkdir -p /tmp/tailscale && \
   mv /tmp/tailscale/tailscaled /usr/local/bin/tailscaled && \
   rm -rf /tmp/tailscale
 
+COPY bin/ /usr/local/bin/
+
 USER spacelift
