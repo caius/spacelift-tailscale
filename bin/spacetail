@@ -53,7 +53,6 @@ if [[ "${ACTION}" = "up" ]]; then
 
   # shellcheck disable=SC2086
   nohup tailscaled \
-    --socket "${TF_VAR_spacelift_workspace_root}/tailscaled.sock" \
     --state=mem: --statedir="${TF_VAR_spacelift_workspace_root}/tailscale-state" \
     --tun=userspace-networking \
     ${TS_TAILSCALED_EXTRA_ARGS} \
@@ -63,7 +62,7 @@ if [[ "${ACTION}" = "up" ]]; then
 
     # FIXME: remove --ssh once we're done debugging
     # shellcheck disable=SC2086
-    tailscale --socket "${TF_VAR_spacelift_workspace_root}/tailscaled.sock" up \
+    tailscale up \
     --authkey "${TS_AUTH_KEY}" \
     ${TS_EXTRA_ARGS}
   echo "spacetail: Tailscale up"
