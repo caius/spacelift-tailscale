@@ -33,6 +33,19 @@ your-stage-id:
     - "spacetail down"
 ```
 
+Due to having to run tailscale in userspace-networking, we need to use it as a HTTP Proxy to talk to things on the Tailnet. Happily, terraform providers usually lean on Go's `net/http` package which picks up `HTTP_PROXY` from the environment and Just Works™. (If you find a provider that doesn't work, I'd suggest reporting upstream to them!)
+
+You'll somehow need to inject that into the environment of the phase, the easiest way is to include it in your `config.yml` as well:
+
+```yaml
+your-stage-id:
+  # …
+  environment:
+    HTTP_PROXY: "http://localhost:8080"
+    http_proxy: "http://localhost:8080"
+  # …
+```
+
 ## Context
 
 Spacelift runs terraform (or other tooling) in containers, and controls the commands that run therein. They operate in phases, and don't detect the "end" of a phase until all processes in the container have exited. It appears each phase _can_ be executed in a different container, but with the same workspace directory/environment variables copied between containers.
