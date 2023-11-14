@@ -1,0 +1,74 @@
+#!/bin/bash
+#
+# Helper script to control tailscale whilst playing nicely with Spacelift
+#
+
+[[ "$TRACE" ]] && set -o xtrace
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o noclobber
+
+[[ "$TRACE" ]] && set -o xtrace
+set -o xtrace
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o noclobber
+
+usage() {
+  echo "Usage: ${0} <up|down>"
+}
+
+if [[ -z ${TF_VAR_spacelift_workspace_root:-} ]]; then
+  echo "spacetail: TF_VAR_spacelift_workspace_root not set but expected"
+  usage
+  exit 1
+fi
+
+if [[ -z ${TS_AUTH_KEY:-} ]]; then
+  echo "spacetail: TS_AUTH_KEY not set but expected"
+  usage
+  exit 1
+fi
+
+if [[ -z ${1:-} ]]; then
+  echo "spacetail: Action not set but expected"
+  usage
+  exit 1
+fi
+
+ACTION="${1:-}"
+readonly ACTION
+
+if [[ "${ACTION}" = "up" ]]; then
+  echo "spacetail: Bringing tailscale up"
+
+  # With massive thanks to containerboot
+  # https://github.com/tailscale/tailscale/blob/main/cmd/containerboot/main.go
+
+  nohup tailscaled \
+    --socket "${TF_VAR_spacelift_workspace_root}/tailscaled.sock" \
+    --state=mem: --statedir="${TF_VAR_spacelift_workspace_root}/tailscale-state" \
+    --tun=userspace-networking \
+    --outbound-http-proxy-listen=localhost:8080 \
+    >> "${TF_VAR_spacelift_workspace_root}/tailscaled.log" &
+
+    sleep 1 # FIXME: grep tailscaled output somehow instead of this?
+
+    # FIXME: remove --ssh once we're done debugging
+    tailscale --socket "${TF_VAR_spacelift_workspace_root}/tailscaled.sock" up \
+    --authkey "${TS_AUTH_KEY}" \
+    --accept-dns=false \
+    --ssh
+  echo "spacetail: Tailscale up"
+elif [[ "${ACTION}" = "down" ]]; then
+  echo "spacetail: Shutting tailscale down"
+  # Stopping tailscaled brings the ephemeral node down cleanly
+  pkill tailscaled
+  echo "spacetail: Tailscale down"
+else
+  echo "spacetail: Unknown action ${ACTION}"
+  usage
+  exit 1
+fi
