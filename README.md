@@ -31,9 +31,14 @@ your-stage-id:
     - "spacetail up"
   after_destroy:
     - "spacetail down"
+  # …
 ```
 
-Due to having to run tailscale in userspace-networking, we need to use it as a HTTP Proxy to talk to things on the Tailnet. Happily, terraform providers usually lean on Go's `net/http` package which picks up `HTTP_PROXY` from the environment and Just Works™. (If you find a provider that doesn't work, I'd suggest reporting upstream to them!)
+### DNS / Making connections
+
+Due to running tailscaled with userspace networking, we don't get MagicDNS wiring up requests for us. Packets are routed to the correct IPs without us having to do anything however, so we just need to solve the DNS issue.
+
+The suggested solution from Tailscale documentation is to use either a SOCKS5 or HTTP Proxy. We run a HTTP Proxy on `localhost:8080` in the container by default, so that's likely the easiest way to go. This requires `http_proxy` setting in the environment, and your Terraform provider able to make use of it. (Anything using Go's `net/http` library should be able to use it automatically.)
 
 You'll somehow need to inject that into the environment of the phase, the easiest way is to include it in your `config.yml` as well:
 
@@ -41,9 +46,20 @@ You'll somehow need to inject that into the environment of the phase, the easies
 your-stage-id:
   # …
   environment:
-    HTTP_PROXY: "http://localhost:8080"
     http_proxy: "http://localhost:8080"
   # …
+```
+
+The other, more complex, route is to inject the Tailscale IP for a given host you want to correspond with into the `/etc/hosts` file. This will need to be called before every phase that wants to talk to it. Anything that can look up the hostname in `/etc/hosts` will be able to connect to it however.
+
+```yaml
+your-stage-id:
+  # …
+  before_plan:
+    - "spacetail up"
+    - "echo \"$(tailscale --socket /mnt/workspace/tailscaled.sock ip -4 server1)\tserver1\" >> /etc/hosts"
+  after_plan:
+    - "spacetail down"
 ```
 
 ## Configuration
