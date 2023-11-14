@@ -50,21 +50,6 @@ your-stage-id:
   # …
 ```
 
-The other, more complex, route is to inject the Tailscale IP for a given host you want to correspond with into the `/etc/hosts` file. This will need to be called before every phase that wants to talk to it, and you'll need to know ahead of time what you want to connect to. Anything that can look up the hostname in `/etc/hosts` will be able to connect to it however.
-
-We use a tool called `txeh` to manage `/etc/hosts`, it's already in the image and has suid bit set so it has permissions to edit `/etc/hosts` even though we're running as spacelift user.
-
-```yaml
-your-stage-id:
-  # …
-  before_plan:
-    - "spacetail up"
-    # Repeat for all your tailscale hosts you want to talk to
-    - "/usr/local/bin/txeh $(tailscale --socket /mnt/workspace/tailscaled.sock ip -4 server1) server1"
-  after_plan:
-    - "spacetail down"
-```
-
 ## Configuration
 
 Configuration is via various envariables in the Spacelift runner container, inspired by tailscale's `containerboot` binary:

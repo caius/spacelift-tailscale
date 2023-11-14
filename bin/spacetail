@@ -71,14 +71,6 @@ elif [[ "${ACTION}" = "down" ]]; then
   # Stopping tailscaled brings the ephemeral node down cleanly
   pkill tailscaled
   echo "spacetail: Tailscale down"
-elif [[ "${ACTION}" = "add-hosts" ]]; then
-  for name in "$@"; do
-    if [[ "${name}" = "add-hosts" ]]; then
-      continue
-    fi
-    echo "spacetail: Adding host ${name} to tailscale"
-    /usr/local/bin/txeh add "$(tailscale ip --1 "${name}")" "${name}"
-  done
 else
   echo "spacetail: Unknown action ${ACTION}"
   usage
