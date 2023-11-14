@@ -52,7 +52,7 @@ Configuration is via various envariables in the Spacelift runner container, insp
 
 - `TS_AUTH_KEY` - Tailscale auth key (Suggest creating ephemeral & tagged key)
 - `TS_TAILSCALED_EXTRA_ARGS` - Extra arguments to pass to `tailscaled`. eg, `--socks5-server=localhost:1080`
-- `TS_TAILSCALE_ARGS` - Extra arguments to pass to `tailscale up`. eg, `--ssh` for debugging
+- `TS_EXTRA_ARGS` - Extra arguments to pass to `tailscale up`. eg, `--ssh` for debugging
 
 ## Context
 

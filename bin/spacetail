@@ -35,10 +35,10 @@ fi
 ACTION="${1:-}"
 readonly ACTION
 
-if [[ -z ${TS_TAILSCALE_EXTRA_ARGS:-} ]]; then
-  TS_TAILSCALE_EXTRA_ARGS="--accept-dns=false"
+if [[ -z ${TS_EXTRA_ARGS:-} ]]; then
+  TS_EXTRA_ARGS="--accept-dns=false"
 fi
-readonly TS_TAILSCALE_EXTRA_ARGS
+readonly TS_EXTRA_ARGS
 
 if [[ -z ${TS_TAILSCALED_EXTRA_ARGS:-} ]]; then
   TS_TAILSCALED_EXTRA_ARGS="--outbound-http-proxy-listen=localhost:8080"
@@ -65,7 +65,7 @@ if [[ "${ACTION}" = "up" ]]; then
     # shellcheck disable=SC2086
     tailscale --socket "${TF_VAR_spacelift_workspace_root}/tailscaled.sock" up \
     --authkey "${TS_AUTH_KEY}" \
-    ${TS_TAILSCALE_EXTRA_ARGS}
+    ${TS_EXTRA_ARGS}
   echo "spacetail: Tailscale up"
 elif [[ "${ACTION}" = "down" ]]; then
   echo "spacetail: Shutting tailscale down"
