@@ -41,7 +41,7 @@ fi
 readonly TS_EXTRA_ARGS
 
 if [[ -z ${TS_TAILSCALED_EXTRA_ARGS:-} ]]; then
-  TS_TAILSCALED_EXTRA_ARGS="--outbound-http-proxy-listen=localhost:8080"
+  TS_TAILSCALED_EXTRA_ARGS="--socks5-server=localhost:1080 --outbound-http-proxy-listen=localhost:8080"
 fi
 readonly TS_TAILSCALED_EXTRA_ARGS
 

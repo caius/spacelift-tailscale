@@ -38,7 +38,7 @@ your-stage-id:
 
 Due to running tailscaled with userspace networking, we don't get MagicDNS wiring up requests for us. Packets are routed to the correct IPs without us having to do anything however, so we just need to solve the DNS issue.
 
-The suggested solution from Tailscale documentation is to use either a SOCKS5 or HTTP Proxy. We run a HTTP Proxy on `localhost:8080` in the container by default, so that's likely the easiest way to go. This requires `http_proxy` setting in the environment, and your Terraform provider able to make use of it. (Anything using Go's `net/http` library should be able to use it automatically.)
+The suggested solution from Tailscale documentation is to use either a SOCKS5 or HTTP Proxy. We run http proxy on `localhost:8080` and socks5 on `localhost:1080` in the container by default, so that's likely the easiest way to go. This requires `http_proxy` setting in the environment, and your Terraform provider able to make use of it. (Anything using Go's `net/http` library should be able to use it automatically.)
 
 You'll somehow need to inject that into the environment of the phase, the easiest way is to include it in your `config.yml` as well:
 
