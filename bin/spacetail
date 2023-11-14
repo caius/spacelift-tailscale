@@ -36,7 +36,7 @@ ACTION="${1:-}"
 readonly ACTION
 
 if [[ -z ${TS_EXTRA_ARGS:-} ]]; then
-  TS_EXTRA_ARGS="--accept-dns=false"
+  TS_EXTRA_ARGS="--accept-dns=false --hostname=spacelift-$(hostname)"
 fi
 readonly TS_EXTRA_ARGS
 
