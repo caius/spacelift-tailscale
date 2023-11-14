@@ -4,12 +4,6 @@
 #
 
 [[ "$TRACE" ]] && set -o xtrace
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o noclobber
-
-[[ "$TRACE" ]] && set -o xtrace
 set -o xtrace
 set -o errexit
 set -o nounset
