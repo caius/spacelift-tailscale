@@ -31,7 +31,32 @@ your-stage-id:
     - "spacetail up"
   after_destroy:
     - "spacetail down"
+  # …
 ```
+
+### DNS / Making connections
+
+Due to running tailscaled with userspace networking, we don't get MagicDNS wiring up requests for us. Packets are routed to the correct IPs without us having to do anything however, so we just need to solve the DNS issue.
+
+The suggested solution from Tailscale documentation is to use either a SOCKS5 or HTTP Proxy. We run http proxy on `localhost:8080` and socks5 on `localhost:1080` in the container by default, so that's likely the easiest way to go. This requires `http_proxy` setting in the environment, and your Terraform provider able to make use of it. (Anything using Go's `net/http` library should be able to use it automatically.)
+
+You'll somehow need to inject that into the environment of the phase, the easiest way is to include it in your `config.yml` as well:
+
+```yaml
+your-stage-id:
+  # …
+  environment:
+    http_proxy: "http://localhost:8080"
+  # …
+```
+
+## Configuration
+
+Configuration is via various envariables in the Spacelift runner container, inspired by tailscale's `containerboot` binary:
+
+- `TS_AUTH_KEY` - Tailscale auth key (Suggest creating ephemeral & tagged key)
+- `TS_TAILSCALED_EXTRA_ARGS` - Extra arguments to pass to `tailscaled`. eg, `--socks5-server=localhost:1080`
+- `TS_EXTRA_ARGS` - Extra arguments to pass to `tailscale up`. eg, `--ssh` for debugging
 
 ## Context
 
