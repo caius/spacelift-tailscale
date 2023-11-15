@@ -67,6 +67,7 @@ Optional configuration:
 
 - `TS_EXTRA_ARGS` - Extra arguments to pass to `tailscale up`. eg, `--ssh` for debugging inside the spacelift container
 - `TS_TAILSCALED_EXTRA_ARGS` - Extra arguments to pass to `tailscaled`. eg, `--socks5-server=localhost:1081` to change socks5 port
+- `TRACE` - set to non-empty (eg, "1") to debug `spacetail` script
 
 ## Howee Dunnit
 
