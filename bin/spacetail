@@ -54,8 +54,7 @@ if [[ "${ACTION}" = "up" ]]; then
   nohup tailscaled \
     --state=mem: --statedir="${TF_VAR_spacelift_workspace_root}/tailscale-state" \
     --tun=userspace-networking \
-    ${TS_TAILSCALED_EXTRA_ARGS} \
-    >> "${TF_VAR_spacelift_workspace_root}/tailscaled.log" &
+    ${TS_TAILSCALED_EXTRA_ARGS} &
 
     sleep 1 # FIXME: grep tailscaled output somehow instead of this?
 
