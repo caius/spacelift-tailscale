@@ -1,10 +1,11 @@
 name: "Build Image"
 
 on:
-  pull_request:
+  pull_request: {}
   push:
     branches:
       - "main"
+  workflow_dispatch: {}
 
 jobs:
   build:
