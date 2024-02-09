@@ -58,7 +58,6 @@ if [[ "${ACTION}" = "up" ]]; then
 
     sleep 1 # FIXME: grep tailscaled output somehow instead of this?
 
-    # FIXME: remove --ssh once we're done debugging
     # shellcheck disable=SC2086
     tailscale up \
     --authkey "${TS_AUTH_KEY}" \
