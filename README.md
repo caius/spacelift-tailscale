@@ -4,7 +4,7 @@ Putting Tailscale into Spacelift, for accessing things on the tailnet from Terra
 
 Based on the base AWS spacelift image, with tailscale added to save re-downloading every run.
 
-The Readme is written mentioning Terraform but it will work out the box for Pulumi, Ansible, etc as well. The original commands defined in your Spacelift workflow are still invoked by Spacelift, we just wrap some setup/teardown around them for Tailscale.
+The Readme is written mentioning Terraform but it will work out the box for OpenTofu, Pulumi, Ansible, etc as well. The original commands defined in your Spacelift workflow are still invoked by Spacelift, we just wrap some setup/teardown around them for Tailscale.
 
 See Howee Dunnit below for implementation details.
 
@@ -13,12 +13,13 @@ See Howee Dunnit below for implementation details.
 The Spacelift Stack needs a couple of configuration options setting to have the tailnet available in your runs. These settings can be configured from:
 
 - [Runtime Configuration] using `spacelift/config.yml` in the repo
+- Attach a Spacelift context that contains the configuration.
 - Spacelift UI -> Stack -> Settings -> Behaviour page (click Advanced for phase hooks)
 - Spacelift's Terraform Provider / API, in the `spacelift_stack` resource
 
 [Runtime Configuration]: https://docs.spacelift.io/concepts/configuration/runtime-configuration/
 
-Setting it via the `config.yml` is most flexible, because you can test out changes in pull requests before merging down. (As suggested by the [Spacelift docs][runtime config suggestion].)
+Setting it via the `config.yml` is most flexible, because you can test out changes in pull requests before merging down. (As suggested by the [Spacelift docs][runtime config suggestion].) Once you have figured out the configuration you need, I suggest creating a context with those settings on and then attaching that to any stack that needs to use it. Lets you re-use it the configuration without copy/pasting each time.
 
 [runtime config suggestion]: https://docs.spacelift.io/concepts/configuration/runtime-configuration/#purpose-of-runtime-configuration
 
@@ -31,9 +32,9 @@ Secondly, for every phase (eg, `plan`, `apply`) you need to talk over the tailne
 - `spacetail up`
 - `trap "spacetail down" EXIT`
 
-There are also `init`, `perform` and `destroy` phases, which you may want to configure as well.
+There are also `init`, `perform` and `destroy` phases, which you may want to configure as well depending on where you need network access. (Terraform doesn't often need it during `terraform init`, but you might want oneshot tasks to work in which case you'll need `perform` too.)
 
-Terraform can then be configured via an environment variable to use tailscaled's http proxy which enables talking HTTP/s over the tailnet using MagicDNS hostnames. Out the box this image runs the http proxy at <http://localhost:8080/>.
+Terraform can then be configured via an environment variable to use tailscaled's http proxy which enables talking HTTP/s over the tailnet using MagicDNS hostnames. Out the box this image runs the http proxy at <http://127.0.0.1:8080/>, and a SOCKS5 proxy at <socks5://127.0.0.1:1080>.
 
 A worked example for a `nomad-us-production` stack in `.spacelift/config.yml`:
 
@@ -42,7 +43,8 @@ stacks:
   nomad-us-production:
     runner_image: "ghcr.io/caius/spacelift-tailscale:latest"
     environment:
-      http_proxy: "http://localhost:8080"
+      HTTP_PROXY: "http://127.0.0.1:8080"
+      HTTPS_PROXY: "http://127.0.0.1:8080"
     before_plan:
       - "spacetail up"
       - "trap 'spacetail down' EXIT"
@@ -52,6 +54,8 @@ stacks:
 ```
 
 This relies on Terraform providers using HTTP libraries that pay attention to the `http_proxy` environment variable for using a HTTP Proxy to communicate via. The default `net/http` library in Golang's stdlib does pay attention to this, so providers like `hashicorp/nomad` Just Work™ by pointing at the tailscale MagicDNS hostname of a nomad server.
+
+(If you're using Tailscale Serve to expose the endpoint the terraform provider needs the full MagicDNS hostname, including the Tailscale domain.)
 
 ## Tailnet Configuration
 
@@ -79,7 +83,7 @@ To work around this, we use a shell `trap` in the `before_` phase hooks to defin
 
 Due to running tailscaled with userspace networking, we don't get MagicDNS wiring up requests for us. Packets are routed to the correct IPs without us having to do anything however, so we just need to solve the DNS issue.
 
-The suggested solution from Tailscale documentation is to use either a SOCKS5 or HTTP Proxy. We run http proxy on `localhost:8080` and socks5 on `localhost:1080` in the container by default, so that's likely the easiest way to go. This requires `http_proxy` setting in the environment, and your Terraform provider able to make use of it. (Anything using Go's `net/http` library should be able to use it automatically.)
+The suggested solution from Tailscale documentation is to use either a SOCKS5 or HTTP Proxy. We run http proxy on `localhost:8080` and socks5 on `localhost:1080` in the container by default, so that's likely the easiest way to go. This requires the running process to be able to use either proxy to make connections via. Anything using Go's `net/http` library should be able to use it automatically, which includes Terraform Providers hitting HTTP APIs.
 
 ## License
 
