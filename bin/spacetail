@@ -54,7 +54,7 @@ if [[ "${ACTION}" = "up" ]]; then
   nohup tailscaled \
     --state=mem: --statedir="${TF_VAR_spacelift_workspace_root}/tailscale-state" \
     --tun=userspace-networking \
-    ${TS_TAILSCALED_EXTRA_ARGS} &
+    ${TS_TAILSCALED_EXTRA_ARGS} 2> /home/spacelift/tailscaled.log &
 
     sleep 1 # FIXME: grep tailscaled output somehow instead of this?
 
@@ -64,7 +64,7 @@ if [[ "${ACTION}" = "up" ]]; then
     ${TS_EXTRA_ARGS}
   echo "spacetail: Tailscale up"
 elif [[ "${ACTION}" = "down" ]]; then
-  echo "spacetail: Shutting tailscale down"
+  echo "spacetail: Taking tailscale down"
   # Stopping tailscaled brings the ephemeral node down cleanly
   pkill tailscaled
   echo "spacetail: Tailscale down"
